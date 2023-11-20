@@ -87,7 +87,7 @@ def index(request):
         cycle.is_avail=False
         cycle.save() 
     cycles = Cycle.objects.filter(lend_or_sell="lend", is_avail=True)
-     
+    currently_renting=None
     if user.is_authenticated:
         appUser = AppUser.objects.get(authUser=request.user)
         cycles = (
@@ -95,8 +95,11 @@ def index(request):
             .exclude(owner=appUser)
             .all()
         )
+        if appUser.currently_renting:
+            currently_renting="Yes"
     context = {
         "cycles": cycles,
+        "currently_renting":currently_renting
     }
     if request.method == "POST":
         username = request.POST["username"]
@@ -115,6 +118,42 @@ def index(request):
 
 def login_user(request):
     return render(request, "login.html")
+
+@csrf_exempt
+def deposit(request):
+
+    if request.method=="POST":
+        print(request)
+        order = Order.objects.get(razorpay_order_id=request.POST["razorpay_order_id"])
+        order.payment_staus = "deposit payment sucessful"
+        order.save()
+        appUser = order.user
+        wallet = Wallet.objects.get(user=appUser)
+        wallet.deposit_amount=3000
+        wallet.deposit_complete=True
+        wallet.save()
+        messages.success(request, "You Have Successfully deposited amount.")
+        return redirect("/")
+
+
+
+    appUser = AppUser.objects.get(authUser=request.user)
+    client = razorpay.Client(
+        auth=("rzp_test_hQHF0MU9H0s3HU", "4PJIN81Fhl66bGWTLmtkj2Ma")
+    )
+    payment_data = {
+        "amount": 300000,
+        "currency": "INR",
+        "receipt": "order_rcptid_11",
+    }
+    payment = client.order.create(data=payment_data)
+    order=Order()
+    order.user=appUser
+    order.razorpay_order_id=payment['id']
+    order.payment_staus="deposit payment requested"
+    order.save()
+    context = {"payment": payment, "appuser": appUser}
+    return render(request, "deposit.html",context=context)
 
 
 def logout_user(request):
@@ -147,9 +186,13 @@ def register_user(request):
             app_user.phone = form.cleaned_data["phone"]
             app_user.profile_img = request.FILES[file_key]
             app_user.save()
+            wallet=Wallet()
+            wallet.user=app_user
+            wallet.save()
+            
 
             messages.success(request, "You Have Successfully Registered! Welcome!")
-            return redirect("/")
+            return redirect("/deposit")
     else:
         form = SignUpForm()
         return render(request, "register.html", {"form": form})
@@ -258,7 +301,15 @@ def shops(request):
 
 
 def details(request, id):
-    context = {"reviews": reviews}
+
+    deposit_paid=None
+    if request.user.is_authenticated:
+        appUser = AppUser.objects.filter(authUser=request.user)[0]
+        wallet=Wallet.objects.get(user=appUser)
+        if wallet.deposit_complete:
+            deposit_paid="Yes"
+
+    context = {"reviews": reviews,"deposit_paid":deposit_paid}
     cycle = Cycle.objects.get(id=id)
     dif=cycle.end_time.replace(tzinfo=None)-datetime.now()
     
@@ -297,6 +348,8 @@ def rented_bikes(request):
                 print("changing being rented to false from rented bike table ")
                 cycle.is_being_rented = False
                 rent.save()
+                rent.user.currently_renting=False
+                rent.user.save()
                 cycle.save()
                 print("Rent Duration Over")
             # else:
@@ -337,6 +390,8 @@ def owned_bikes(request):
                     cycle_rented = rent.cycle
                     cycle_rented.is_being_rented = False
                     rent.save()
+                    rent.user.currently_renting=False
+                    rent.user.save()
                     print("changing being rented to false from owned bike table ")
                     cycle_rented.save()
                 else:
@@ -502,7 +557,8 @@ def payments(request):
     wallet_trans.save()
     wallet.save()
 
-
+    appuser.currently_renting=True
+    appuser.save()
     cycle_id = orders[request.POST["razorpay_order_id"]]["cycle_id"]
     payments_details["cycle_id"] = cycle_id
     context = {"payments_details": payments_details, "rented_details": rented_details}

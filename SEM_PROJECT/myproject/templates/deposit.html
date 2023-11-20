@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% endblock title %}
+
+{% block body %}
+{% if user.is_authenticated %}
+
+
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
+      <h1 class="h2">Please Review the details and proceed for payment</h1>
+    </div>
+  </main>
+
+<h4>Deposit Details</h4>
+<p> Transaction : Deposit <br>
+    User Name : {{ appuser.authUser.first_name }} {{ user.last_name }}<br>
+    Amout to be paid : 3000 <br>
+</p>
+
+<button id="rzp-button1">Pay with Razorpay</button>
+{% csrf_token %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var options = {
+    "key": "rzp_test_hQHF0MU9H0s3HU", // Enter the Key ID generated from the Dashboard
+    "amount": "3000000", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    "currency": "INR",
+    "name": "Pedal",
+    "description": "Deposit",
+    "image": "/static/images/bike_icon.svg",
+    "order_id": "{{ payment.id }}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    "callback_url": "http://127.0.0.1:8000/deposit",
+    'csrfmiddlewaretoken': '{{ csrf_token }}',
+
+    // "handler": function (response){
+    //     alert(response.razorpay_payment_id);
+    //     alert(response.razorpay_order_id);
+    //     alert(response.razorpay_signature)
+    // },
+    "prefill": {
+        "name": "{{ appuser.authUser.first_name }}",
+        "email": "{{ appuser.authUser.email }}",
+        "contact": "{{ appuser.phone }}"
+    },
+    "notes": {
+        "note": "{{ appuser.authUser.first_name }}"
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+var rzp1 = new Razorpay(options);
+rzp1.on('payment.failed', function (response){
+        alert(response.error.code);
+        alert(response.error.description);
+        alert(response.error.source);
+        alert(response.error.step);
+        alert(response.error.reason);
+        alert(response.error.metadata.order_id);
+        alert(response.error.metadata.payment_id);
+});
+document.getElementById('rzp-button1').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+
+{% else %}
+<br><br>
+<h1>Sorry! You Must Be Logged In To View This Page...</h1>
+
+<br>                                   
+
+  
+<h1 class="h2"><a href="/login">Login Here</a></div></h1>
+
+
+
+{% endif %}
+
+
+
+
+{% endblock body %}

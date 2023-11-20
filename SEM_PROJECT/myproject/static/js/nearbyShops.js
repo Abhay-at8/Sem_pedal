@@ -102,7 +102,7 @@ function createMapAndMarker(lat, lng) {
     var request = {
         location: { lat: lat, lng: lng },
         radius: 5000, // Search within 5 km radius
-        query: "nearby cycle repair shop" // Search for bike repair shops
+        query: "nearby bike repair shop" // Search for bike repair shops
     };
 
     // Create a service object to perform the text search

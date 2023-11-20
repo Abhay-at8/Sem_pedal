@@ -4,6 +4,13 @@
 {% block title %}{% endblock title %}
 
 {% block body %}
+{%if currently_renting %}
+<br><br>
+<h1>You are currently renting a bike. You cannot rent more than one bike at a time!!</h1>
+
+<br>
+
+{% else %}
 <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 ">
     <h1 class="h2">Please Find Our Awesome Collection of Bikes to Rent</h1>
@@ -34,7 +41,7 @@
     {% endfor %}
       
     </div>
-
+    {% endif %}
 
 
 

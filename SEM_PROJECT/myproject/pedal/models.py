@@ -31,6 +31,7 @@ class AppUser(models.Model):
    address =  models.CharField(max_length=100)
    phone = models.CharField(max_length=15)
    authUser=models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+   currently_renting=models.BooleanField(default=False)
 
 class Cycle(models.Model):
    cycle_img    = models.ImageField(null=True, blank=True, upload_to="images/")
