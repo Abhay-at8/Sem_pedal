@@ -5,6 +5,7 @@ from .managers import CustomUserManager
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from datetime import datetime
+from django.db.models.deletion import CASCADE
 
 # Create your models here.
 # class AppUser(AbstractUser, PermissionsMixin):
@@ -30,7 +31,7 @@ class AppUser(models.Model):
    #email = models.EmailField(_("email address"), unique=True)
    address =  models.CharField(max_length=100)
    phone = models.CharField(max_length=15)
-   authUser=models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+   authUser=models.ForeignKey(User, on_delete=models.CASCADE)
    currently_renting=models.BooleanField(default=False)
 
 class Cycle(models.Model):
@@ -76,7 +77,7 @@ class Rent(models.Model):
    start_time=models.DateTimeField()
    end_time=models.DateTimeField()
    is_avail=models.BooleanField(default=True)
-   
+   rating=models.IntegerField(default=None,null=True)
 
 class Transaction(models.Model):
    payment=models.ForeignKey(Payment, blank=True, null=True, on_delete=models.SET_NULL)
@@ -101,4 +102,11 @@ class WalletTransaction(models.Model):
    transaction_from =models.ForeignKey(AppUser, blank=True, null=True, on_delete=models.SET_NULL,related_name='transaction_from')
    transaction_time=models.DateTimeField(default=datetime.now())
    transaction_name=models.CharField(max_length=50)
+
+class Reviews(models.Model):
+    author = models.ForeignKey(AppUser, on_delete=CASCADE)
+    cycle = models.ForeignKey(Cycle, on_delete=CASCADE)
+    review_date = models.DateField()
+    rating = models.IntegerField()
+    text_description = models.CharField(max_length=5000)
    

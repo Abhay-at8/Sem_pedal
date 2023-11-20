@@ -102,17 +102,17 @@
                           {% for review in reviews %}
                               <div class="card-body p-4">
                                 <div class="d-flex flex-start">
-                                  <img class="rounded-circle shadow-1-strong me-3" src={{review.img_link}} alt="avatar" width="60"
+                                  <img class="rounded-circle shadow-1-strong me-3" src={{review.author.profile_img.url}} alt="avatar" width="60"
                                     height="60" />
                                   <div>
-                                    <h6 class="fw-bold mb-1">{{review.user_name}}</h6>
+                                    <h6 class="fw-bold mb-1">{{review.author.authUser.first_name}}</h6>
                                     <div class="d-flex align-items-center mb-3">
                                       <p class="mb-0">
-                                        {{review.date}}
+                                        {{review.review_date}}
                                       </p>
                                     </div>
                                     <p class="mb-0">
-                                      {{review.content}}
+                                      {{review.text_description}}
                                     </p>
                                   </div>
                                 </div>

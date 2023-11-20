@@ -4,8 +4,12 @@
 
 {% block body %}
 {% if user.is_authenticated %}
-{% if cycle_rented  %}   
+{% if cycle_rented  %}
 
+
+
+<br><br>
+    <h2>Your Rented Cycle details</h2>
 <section style="background-color: whitesmoke;">
     <div class="container my-5 py-5">
       <div class="row d-flex justify-content-center">
@@ -22,57 +26,117 @@
                     <h3 class="product-title">{{cycle_rented.model}} </h3>
                     <div class="rating">
                         <div class="stars">
-                            <span class="fa fa-star checked"></span>
-                            <span class="fa fa-star checked"></span>
-                            <span class="fa fa-star checked"></span>
-                            <span class="fa fa-star"></span>
-                            <span class="fa fa-star"></span>
+                          {% for i in rating_stars %}
+
+                          <span class="fa fa-star checked"></span>
+                          {% endfor %}
                         </div>
-                        <span class="review-no">41 Rents</span>
+                        <span class="review-no">{{cycle_rented.no_of_rents}} Rents</span>
                     </div>
                     <p class="product-description">The the cycle you have rented is {{cycle_rented.model}}</p>
-                    <h4 class="price">current price: <span>Rs 180</span></h4>
+                  
+                        <h5 class="price">Rental Details</h5>
+                        <b class="price">Checkout time: </b> {{ cycle_rented.end_time }}<br>
+                        <b class="price">Amount Paid: </b><span>{{ rent.payment.amount }}</span></h5><br><br>
                     
-                    <div>
-                        <h5>Address:</h5>
+                    <!-- <div>
+                        <h4>Address:</h4>
                         {{ cycle_rented.owner.address }}
-                    </div>
-                    <div>
+                    </div> -->
+                    
                         <div>
                             <h5>Owner:</h5>
                             {{ cycle_rented.owner.authUser.first_name }} {{ cycle_rented.owner.authUser.last_name }}
                         </div>
-                    </div>
+                        <br>
+                        <div>
+                          <h5>Owner Contact:</h5>
+                          {{ cycle_rented.owner.phone }}
+                        </div>
+
+
+                    
+                    <form id="chat" method="post" action="/chat/checkview">
+                      {% csrf_token %}
+                      <!-- <input type="hidden" name="cycle_id" value="{{ cycle.id }}" /> -->
+                      <input type="hidden" name="cycle_id" value="{{ cycle_rented.id }}" />
+                      <input type="hidden" name="user_id" value="{{ user.id }}" />
+                      <input type="hidden" name="user_name" value="{{ user.username }}" />
+                      <button id="chat" class="btn btn-success btn-lg float-right mx-2" type="submit">Chat with owner</button>
+                    </form>
                 </div>
             </div>
         </div>
 
     </div>
 </div>
-</section>
 
-<section style="background-color: whitesmoke;">
-    <div class="container my-5 py-5">
-      <div class="row d-flex justify-content-center">
-        <div class="col-md-12 col-lg-10">
-          <div class="card text-dark">
-            <h4 class="mb-0">Post your Review</h4>
-            <div class="form-outline w-100">
-                <textarea class="form-control" id="textAreaExample" rows="4"
-                  style="background: #fff;"></textarea>
-                <label class="form-label" for="textAreaExample"></label>
-            </div>
-            <div class="float-end mt-2 pt-1">
-              <button type="button" class="btn btn-primary btn-sm">Post comment</button>
-              <button type="button" class="btn btn-outline-primary btn-sm">Cancel</button>
-            </div>
-        </div>
-    </div>
-  </div>
-</div>
-</section>
+
+
+
+            <!-- <form method = "post"  action="/rating"></form>
+              {% csrf_token %}
+              <div class="form-outline w-100">
+                  <textarea class="form-control" name="review" id="review" rows="4"
+                    style="background: #fff;"></textarea>
+                  <label class="form-label" for="review"></label>
+              </div>
+              <div class="float-end mt-2 pt-1">
+                <button type="submit" class="btn btn-primary btn-sm">Post review</button>
+                <button type="button" class="btn btn-outline-primary btn-sm">Cancel</button>
+              </div>
+            </form> -->
+
+
+
+
+
 
 {%endif%}
+
+<section style="background-color: whitesmoke;">
+  <div class="container my-5 py-5">
+      <table class="table">
+          <thead class="thead-dark">
+          <tr>
+              <th scope="col">S. No</th>
+              <th scope="col">Rented Cycle</th>
+              <th scope="col">From</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Rent endtime</th>
+          </tr>
+          </thead>
+          
+
+          <tbody>
+          {% for rent in rents %}
+          <tr>
+              <th scope="row">{{forloop.counter}}</th>
+              <td>{{rent.cycle.model}}</td>
+              <td>{{rent.cycle.owner.authUser.first_name}} {{rent.cycle.owner.authUser.last_name}}</td>
+              <td>Rs {{rent.payment.amount}}</td>
+              <td>{{rent.end_time}}</td>
+              {% if rent.rating %}
+                <td>{{rent.rating}}</td>
+              {%else%}
+              <form id="rating" method="post" action="">
+                {% csrf_token %}
+
+                <input type="hidden" name="rent" value="{{ rent.id }}" />
+                
+                <td><button id="rating" class="btn btn-success btn-sm float-right mx-2" type="submit">Post Review</button></td>
+              </form>
+            {% endif %}
+          </tr>
+          
+          {% endfor %}
+          </tbody>
+      </table>
+  </div>
+
+</section>
+
+
 {% else %}
 <br><br>
 <h1>Sorry! You Must Be Logged In To View This Page...</h1>

@@ -6,76 +6,15 @@ import razorpay
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .forms import SignUpForm, CycleForm
-from .models import Cycle, AppUser, Order, Payment, Rent, Transaction, Wallet,WalletTransaction
+from .models import Cycle, AppUser, Order, Payment, Rent, Transaction, Wallet, WalletTransaction, Reviews
 from datetime import datetime, timedelta
 from chat.models import Room
 
-orders = {}
-
-cnt = 0
-# class Cycle:
-
-# 	def __init__(self,model,address,dop,price,img='cycle1.png'):
-# 		global cnt
-# 		cnt+=1
-# 		self.model=model
-# 		self.address=address
-# 		self.dop=dop
-# 		self.price=price
-# 		self.img="http://localhost:8080/"+str(img)
-# 		self.id=cnt
-# 		print(f"{self.id} and {self.model}")
-# 	def __str__(self):
-# 		return f"cyle_id:{self.id} model {self.model} "
 
 
-class Review:
-    def __init__(self, cycle_id, content, user_name, img_link, date):
-        self.cycle_id = cycle_id
-        self.content = content
-        self.user_name = user_name
-        self.img_link = img_link
-        self.date = date
 
 
-# class User:
-#     def __init__(self, user_name, email_id, contact):
-#         self.user_name = user_name
-#         self.email_id = email_id
-#         self.contact = contact
 
-
-# cycles=[Cycle(model='hero Razor back',address='1102 MSA 1 ',dop='06/09/19',price='190',img='cycle2.jpg'),
-# 		Cycle(model='hero Sprint',address='1201 MSA 2',dop='06/06/23',price='1000'),
-# 		Cycle(model='atlas',address='1102 Malviya Bahvan',dop='06/06/23',price='2000'),
-# 		Cycle(model='hercules',address='312 Ram Bhavan',dop='06/06/23',price='1000'),
-# 		Cycle(model='hero Sprint',address='2321 Buddha Bhavan',dop='06/06/23',price='1000')
-# 		]
-img1 = "https://mdbcdn.b-cdn.net/img/Photos/Avatars/img%20(26).webp"
-img2 = "https://mdbcdn.b-cdn.net/img/Photos/Avatars/img%20(23).webp"
-cont = "Suspendisse quos? Tempus cras iure temporibus? Eu laudantium cubilia sem sem! Repudiandae et! Massa senectus enim minim sociosqu delectus posuere."
-reviews = [
-    Review(
-        cycle_id=1, content=cont, user_name="Ramesh", img_link=img1, date="06/06/23"
-    ),
-    Review(
-        cycle_id=1, content=cont, user_name="Suresh", img_link=img2, date="01/12/23"
-    ),
-    Review(
-        cycle_id=1,
-        content="Good cycle. well maintained",
-        user_name="Ramesh",
-        img_link=img1,
-        date="06/06/23",
-    ),
-    Review(
-        cycle_id=1,
-        content="Good cycle. well maintained",
-        user_name="Suresh",
-        img_link=img2,
-        date="01/12/23",
-    ),
-]
 
 
 def index(request):
@@ -118,6 +57,31 @@ def index(request):
 
 def login_user(request):
     return render(request, "login.html")
+
+
+def rating(request):
+    if request.method=='POST':
+        rent_id=request.session.get('rent_id')
+        rent=Rent.objects.filter(id=rent_id)[0]
+        print(rent.user.phone)
+        review_description=(request.POST["review"])
+        rating=request.POST["rate"]
+        review=Reviews()
+        review.text_description=review_description
+        review.rating=rating
+        review.review_date=datetime.now()
+        review.author=rent.user
+        review.cycle=rent.cycle
+        review.cycle.total_stars+=int(rating)
+        review.cycle.save()
+        rent.rating=rating
+        review.save()
+        rent.save()
+        print(f"inside post {request.session.get('rent_id')}")
+        messages.success(request, "You Have Successfully submitted review.")
+        return redirect("/rentedBikes")
+
+    return render(request, "rating.html")
 
 @csrf_exempt
 def deposit(request):
@@ -302,15 +266,24 @@ def shops(request):
 
 def details(request, id):
 
+    cycle = Cycle.objects.get(id=id)
+
+    list_of_reviews = list(Reviews.objects.filter(cycle=cycle).order_by('-review_date'))
+    user_profile_images = []
+    # for review in list_of_reviews:
+    #     #user_profile_image = AppUser.objects.filter(authUser=review.User)[0].profile_img
+    #     user_profile_images.append(user_profile_image)
+
+    context = {"reviews": list_of_reviews}
+
     deposit_paid=None
     if request.user.is_authenticated:
         appUser = AppUser.objects.filter(authUser=request.user)[0]
         wallet=Wallet.objects.get(user=appUser)
         if wallet.deposit_complete:
             deposit_paid="Yes"
-
-    context = {"reviews": reviews,"deposit_paid":deposit_paid}
-    cycle = Cycle.objects.get(id=id)
+    list 
+    context["deposit_paid"] = deposit_paid
     dif=cycle.end_time.replace(tzinfo=None)-datetime.now()
     
     time_rent=dif.total_seconds() / 3600
@@ -322,7 +295,9 @@ def details(request, id):
     print(f"{time_rent} {cycle.price} {total_rent}")
     context["cycle"] = cycle
     if cycle.no_of_rents != 0:
-        rating = int(cycle.total_stars / cycle.no_of_rents)
+#
+        total_reviews=len(Reviews.objects.filter(cycle = cycle))
+        rating = int(cycle.total_stars / total_reviews)
         rating_stars = [i for i in range(rating)]
     else:
         rating_stars = []
@@ -336,9 +311,17 @@ def details(request, id):
 
 def rented_bikes(request):
     context = {}
+    if request.method=='POST':
+        rent_obj=request.POST["rent"]
+        print((rent_obj))
+        request.session["rent_id"] = rent_obj
+        return redirect("/rating")
+        
+
     if request.user.is_authenticated:
         appUser = AppUser.objects.filter(authUser=request.user)[0]
         rents = Rent.objects.filter(user=appUser, is_avail=True)
+        all_rents = Rent.objects.filter(user=appUser).order_by('-end_time')
         if len(rents) != 0:
             current_dateTime = datetime.now()
             rent = rents[0]
@@ -357,7 +340,17 @@ def rented_bikes(request):
             #     rent.cycle.save()
             # owned_cycle=Cycle.objects.get(owner=appUser,lend_or_sell="sell")
             cycle_rented = rent.cycle
+            if cycle_rented.no_of_rents != 0:
+                total_reviews=len(Reviews.objects.filter(cycle = cycle))
+                rating = int(cycle.total_stars / total_reviews)
+                rating_stars = [i for i in range(rating)]
+            else:
+                rating_stars = []
+            context["rating_stars"] = rating_stars
             context["cycle_rented"] = cycle_rented
+            context["rent"] = rent
+        context["rents"]=all_rents
+            
     return render(request, "rented_bikes.html", context=context)
 
 
@@ -465,6 +458,7 @@ def checkout(request):
     return render(request, "checkout.html", context=context)
 
 
+
 def lend(request):
     if request.user.is_authenticated:
         rent_hrs=int(request.POST["hrs"])
@@ -515,7 +509,7 @@ def payments(request):
     transaction2.user=cycle.owner
     transaction2.transaction_with=appuser
 
-
+#Reviews.objects.filter(cucle = cycle)
 
 
     if cycle.lend_or_sell == "lend":
