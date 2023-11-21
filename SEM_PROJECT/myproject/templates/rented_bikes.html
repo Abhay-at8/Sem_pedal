@@ -104,6 +104,8 @@
               <th scope="col">From</th>
               <th scope="col">Amount</th>
               <th scope="col">Rent endtime</th>
+              <th scope="col">Your Rating</th>
+              <th scope="col"></th>
           </tr>
           </thead>
           
@@ -117,14 +119,14 @@
               <td>Rs {{rent.payment.amount}}</td>
               <td>{{rent.end_time}}</td>
               {% if rent.rating %}
-                <td>{{rent.rating}}</td>
+              <td>{{rent.rating}} stars</td>
+              <td></td>
               {%else%}
+              <td>Not Rated Yet</td>
               <form id="rating" method="post" action="">
                 {% csrf_token %}
-
-                <input type="hidden" name="rent" value="{{ rent.id }}" />
-                
-                <td><button id="rating" class="btn btn-success btn-sm float-right mx-2" type="submit">Post Review</button></td>
+                <input type="hidden" name="rent" value="{{ rent.id }}" /> 
+                <td><button id="rating" class="btn btn-success btn-sm float mx-2" type="submit">Post Review</button></td>
               </form>
             {% endif %}
           </tr>
