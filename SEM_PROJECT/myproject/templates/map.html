@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% endblock title %}
+
+{% block body %}
+
+<!-- <div id="map" style="width: 400px; height: 300px;"></div> -->
+<h1>User Location</h1>
+<div id="map"></div>
+<!-- <h1>{{ cycle.sold_to.id }}</h1> -->
+<input type="hidden" id="user_id" value="{{ user_id }}">
+<!-- <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script> -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"><!--//ADD YOUR KEY-->
+</script>
+<script src="{% static 'js/map.js' %}"></script>
+
+{% endblock body %}

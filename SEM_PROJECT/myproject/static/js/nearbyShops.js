@@ -121,7 +121,10 @@ function createMapAndMarker(lat, lng) {
                     map,
                     title: results[i].name,
                     //label: results[i].place_id,
-                    label: "", // keeping marker text empty
+                    label: {
+                        // added placeId text with transparent color to use in click event listener
+                        text: results[i].place_id, color: "rgba(0,0,0,0)"
+                    },
                     icon: {
                         //url: "http://localhost:8080/bike_icon.svg",
                         url: "/static/images/bike_icon.svg",
@@ -131,7 +134,7 @@ function createMapAndMarker(lat, lng) {
                 // Add a click event listener to each marker
                 google.maps.event.addListener(marker, "click", function () {
                     // Get the place ID of the clicked marker
-                    var placeId = this.label;
+                    var placeId = this.label.text;
                     console.log(placeId);
                     console.log(this);
                     console.log(marker)

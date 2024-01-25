@@ -4,146 +4,153 @@
 
 {% block body %}
 {% if user.is_authenticated %}
-    {% if owned_cycles %}
-    <br><br>
-    <h2>Cycles to Lend</h2>
-      <section style="background-color: whitesmoke;">
-        <div class="container my-5 py-5">
-          <table class="table">
-            <thead class="thead-dark">
-              <tr>
-                <th scope="col">Cycle Id</th>
-                <th scope="col">Cycle Model</th>
-                <th scope="col">Being Rented</th>
-                <th scope="col">Status</th>
-                <th scope="col">Rentee Name</th>
-                <th scope="col">Rent Hours</th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
+{% if owned_cycles %}
+<br><br>
+<h2>Cycles to Lend</h2>
+<section style="background-color: whitesmoke;">
+  <div class="container my-5 py-5">
+    <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Cycle Id</th>
+          <th scope="col">Cycle Model</th>
+          <th scope="col">Being Rented</th>
+          <th scope="col">Status</th>
+          <th scope="col">Rentee Name</th>
+          <th scope="col">Rent Hours</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
 
-            <tbody>
-              {% for cycle in owned_cycles %}
-                <tr>
-                  <th scope="row">{{cycle.cycle_id}}</th>
-                  <td>{{cycle.cycle_model}}</td>
-                  {% if cycle.being_rented %}
-                    <td>{{cycle.being_rented}}</td>
-                    <td>Being Rented</td>
-                    <td>{{cycle.rentee_name}}</td>
-                    <td>Being Rented</td>
-                  {% else %}
-
-                    {% if cycle.is_avail %}
-                      <td>No</td>
-                      <td>Available on portal</td>
-                      <td>Not rented yet</td>
-                      <td>Already on portal</td>
-                      <td></td>
-                    {% else %}
-                      <td>No</td>
-                      <td>Not on portal</td>
-                      <td>Not rented yet</td>
-                      <form id="lend" method="post" action="/lend">
-                        {% csrf_token %}
-                        <td><input type="number" id="hrs" name="hrs" min="1" max="24"></td>
-                        <input type="hidden" name="cycle_id" value="{{ cycle.cycle_id }}" />
-                        <td><button id="lend" class="btn btn-success btn-sm float-right mx-2" type="submit">Lend</button></td>
-                      </form>
-                    {% endif %}
-                  {% endif %}
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-
-      </section>
-    {% endif %}
-
-
-
-
-    {% if cycles_for_sale %}
-    <h2>Cycles for Sale</h2>
-
-      <section style="background-color: whitesmoke;">
-        <div class="container my-5 py-5">
-          <table class="table">
-            <thead class="thead-dark">
-              <tr>
-                <th scope="col">Cycle Id</th>
-                <th scope="col">Cycle Model</th>
-                <th scope="col">Status</th>
-                <th scope="col">Buyer Name</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for cycle in cycles_for_sale %}
-              <tr>
-                <th scope="row">{{cycle.id}}</th>
-                <td>{{cycle.model}}</td>
-                {% if cycle.sold_to %}
-                  <td>Sold</td>
-                  <td>{{cycle.sold_to.authUser.first_name}} {{cycle.sold_to.authUser.last_name}}</td>
-                {% else %}
-                  <td>Not Sold</td>
-                  <td>Not Applicable</td>
-                {% endif %}
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-
-      </section>
-
-    {%endif%}
-
-    {% if rooms %}
-    <h2>Messages from users</h2>
-    <section style="background-color: whitesmoke;">
-      <div class="container my-5 py-5">
-        <table class="table">
-          <thead class="thead-dark">
-            <tr>
-              <th>Room </th>
-              <th>Cycle ID</th>
-              <th>Customer Name</th>
-              <th>Chat Link</th>
-            </tr>
-          </thead>
-          {% for room in rooms %}
-          <tr>
-            <td>{{room.name}}</td>
-            <td>{{room.cycle_id}}</td>
-            <td>{{room.user.first_name}} {{room.user.last_name}}</td>
-            <td>
-              <form id="chat" method="post" action="/chat/checkview_owner">
-                {% csrf_token %}
-                <input type="hidden" name="room_name" value="{{ room.name }}" />
-                <input type="hidden" name="user_id" value="{{ user.id }}" />
-                <input type="hidden" name="seller_name" value="{{ user.username }}" />
-                <button id="chat" class="btn btn-success btn-sm float-centre mx-2" type="submit">Chat with customer</button>
-              </form>
+      <tbody>
+        {% for cycle in owned_cycles %}
+        <tr>
+          <th scope="row">{{cycle.cycle_id}}</th>
+          <td>{{cycle.cycle_model}}</td>
+          {% if cycle.being_rented %}
+          <td>{{cycle.being_rented}}</td>
+          <td>Being Rented</td>
+          <td>{{cycle.rentee_name}}</td>
+          <td>Being Rented</td>
+          <!-- location button -->
+          <form id="location" method="post" action="/map">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ cycle.rentee_id.id }}" />
+            <td><button id="location" class="btn btn-success btn-sm float-right mx-2" type="submit">Location</button>
             </td>
-          </tr>
-          {% endfor %}
-        </table>
-      </section>
-      <br>
-      <br>
-    {%endif%}
+          </form>
+          {% else %}
+
+          {% if cycle.is_avail %}
+          <td>No</td>
+          <td>Available on portal</td>
+          <td>Not rented yet</td>
+          <td>Already on portal</td>
+          <td></td>
+          {% else %}
+          <td>No</td>
+          <td>Not on portal</td>
+          <td>Not rented yet</td>
+          <form id="lend" method="post" action="/lend">
+            {% csrf_token %}
+            <td><input type="number" id="hrs" name="hrs" min="1" max="24"></td>
+            <input type="hidden" name="cycle_id" value="{{ cycle.cycle_id }}" />
+            <td><button id="lend" class="btn btn-success btn-sm float-right mx-2" type="submit">Lend</button></td>
+          </form>
+          {% endif %}
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+</section>
+{% endif %}
+
+
+
+
+{% if cycles_for_sale %}
+<h2>Cycles for Sale</h2>
+
+<section style="background-color: whitesmoke;">
+  <div class="container my-5 py-5">
+    <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Cycle Id</th>
+          <th scope="col">Cycle Model</th>
+          <th scope="col">Status</th>
+          <th scope="col">Buyer Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cycle in cycles_for_sale %}
+        <tr>
+          <th scope="row">{{cycle.id}}</th>
+          <td>{{cycle.model}}</td>
+          {% if cycle.sold_to %}
+          <td>Sold</td>
+          <td>{{cycle.sold_to.authUser.first_name}} {{cycle.sold_to.authUser.last_name}}</td>
+          {% else %}
+          <td>Not Sold</td>
+          <td>Not Applicable</td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+</section>
+
+{%endif%}
+
+{% if rooms %}
+<h2>Messages from users</h2>
+<section style="background-color: whitesmoke;">
+  <div class="container my-5 py-5">
+    <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th>Room </th>
+          <th>Cycle ID</th>
+          <th>Customer Name</th>
+          <th>Chat Link</th>
+        </tr>
+      </thead>
+      {% for room in rooms %}
+      <tr>
+        <td>{{room.name}}</td>
+        <td>{{room.cycle_id}}</td>
+        <td>{{room.user.first_name}} {{room.user.last_name}}</td>
+        <td>
+          <form id="chat" method="post" action="/chat/checkview_owner">
+            {% csrf_token %}
+            <input type="hidden" name="room_name" value="{{ room.name }}" />
+            <input type="hidden" name="user_id" value="{{ user.id }}" />
+            <input type="hidden" name="seller_name" value="{{ user.username }}" />
+            <button id="chat" class="btn btn-primary btn-sm float-centre mx-2" type="submit">Chat with customer</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+</section>
+<br>
+<br>
+{%endif%}
 
 
 
 {% else %}
-  <br><br>
-  <h1>Sorry! You Must Be Logged In To View This Page...</h1>
+<br><br>
+<h1>Sorry! You Must Be Logged In To View This Page...</h1>
 
-  <br>
+<br>
 
 
-  <h1 class="h2"><a href="/login">Login Here</a></div>
-  </h1>
+<h1 class="h2"><a href="/login">Login Here</a></div>
+</h1>
 
 
 

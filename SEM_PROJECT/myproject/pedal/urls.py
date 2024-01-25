@@ -20,7 +20,8 @@ urlpatterns = [
     path("ownedBikes", views.owned_bikes, name="owned_bikes"),
     path("lend", views.lend, name="lend"),
     path("deposit", views.deposit, name="deposit"),
-    path("rating", views.rating, name="rating")
-    
-
+    path("rating", views.rating, name="rating"),
+    path("map", views.map, name="map"),
+    path("get_location/", views.get_location, name="get_location"),
+    path("save_location/", views.save_location, name="save_location"),
 ]

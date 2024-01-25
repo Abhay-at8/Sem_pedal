@@ -228,3 +228,9 @@ h1 {
   font-size: 14px;
   line-height: 20px;
 }
+
+nav a:hover {
+  /* Change the color and background of the links on hover */
+  color: white;
+  background-color: grey;
+}
