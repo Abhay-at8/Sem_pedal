@@ -26,7 +26,11 @@ Steps to Run
 
 
 3) In the same directory run the following command to start server
-python .\manage.py runserver
+bash startup.sh start
+
+To stop the server run
+bash startup.sh stop
+
 
 Note incase of new database some migrations need be done before running the same
 which can be done by following 2 commands
