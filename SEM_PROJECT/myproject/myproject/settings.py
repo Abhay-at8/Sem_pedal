@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-oq$uxvpeo0j4532vkq8^qy&3pyvbln=8t)%k1(7xm(r4a=j@d0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # AUTH_USER_MODEL = "pedal.AppUser"
 # Application definition
